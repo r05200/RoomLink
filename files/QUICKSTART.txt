@@ -1,0 +1,98 @@
+🚀 QUICK START GUIDE
+====================
+
+Follow these steps to get your AI Property Search website running:
+
+STEP 1: Install Node.js
+-----------------------
+If you don't have Node.js installed:
+- Download from: https://nodejs.org/ (get LTS version)
+- Install it and restart your terminal
+
+STEP 2: Get API Keys
+--------------------
+You need TWO API keys:
+
+A) Anthropic API Key (for Claude AI)
+   1. Go to: https://console.anthropic.com/
+   2. Sign up/login
+   3. Click "API Keys" in left sidebar
+   4. Click "Create Key"
+   5. Copy the key (starts with sk-ant-)
+   
+B) Google Maps API Key
+   1. Go to: https://console.cloud.google.com/
+   2. Create a new project
+   3. Click "Enable APIs and Services"
+   4. Search for "Maps JavaScript API" and enable it
+   5. Go to "Credentials" → "Create Credentials" → "API Key"
+   6. Copy your API key
+
+STEP 3: Setup the Project
+--------------------------
+Open terminal/command prompt in this folder and run:
+
+    npm install
+
+This will install all required packages.
+
+STEP 4: Add Your Anthropic API Key
+-----------------------------------
+Option A - Create .env file (recommended):
+    1. Copy .env.example to .env
+    2. Edit .env and replace "your_anthropic_api_key_here" with your actual key
+
+Option B - Set it temporarily:
+    On Mac/Linux:
+        export ANTHROPIC_API_KEY=sk-ant-your-key-here
+    
+    On Windows:
+        set ANTHROPIC_API_KEY=sk-ant-your-key-here
+
+STEP 5: Add Your Google Maps API Key
+-------------------------------------
+1. Open the file: public/index.html
+2. Scroll to the bottom (around line 420)
+3. Find: src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap"
+4. Replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps key
+
+STEP 6: Start the Server
+-------------------------
+Run this command:
+
+    npm start
+
+You should see: "Server running on http://localhost:3000"
+
+STEP 7: Open Your Browser
+--------------------------
+Go to: http://localhost:3000
+
+That's it! Try asking:
+- "I want a 3 bedroom house under $1 million"
+- "Show me condos with parking"
+- "I need a house with a pool"
+
+TROUBLESHOOTING
+---------------
+Problem: "Cannot find module"
+Solution: Run "npm install" again
+
+Problem: "Failed to process request"
+Solution: Check that your ANTHROPIC_API_KEY is set correctly
+
+Problem: Map not showing
+Solution: Check that you added your Google Maps API key to index.html
+
+Problem: Port 3000 already in use
+Solution: Change PORT in .env file to 3001 or another number
+
+NEED HELP?
+----------
+Check the full README.md file for detailed documentation.
+
+For API support:
+- Anthropic: https://support.anthropic.com
+- Google Maps: https://developers.google.com/maps
+
+Happy house hunting! 🏠
