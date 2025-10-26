@@ -115,76 +115,115 @@ const properties = [
   }
 ];
 
-// Claude AI endpoint
+// Claude AI endpoint - Extract criteria and return filtered properties
 app.post('/api/search', async (req, res) => {
   try {
-    const { userPrompt, conversationHistory } = req.body;
-    
+    const { userPrompt } = req.body;
+
     // Initialize Anthropic client
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY || 'your-api-key-here'
     });
 
-    // Build conversation messages
-    const messages = conversationHistory || [];
-    messages.push({
-      role: 'user',
-      content: userPrompt
-    });
-
-    // Call Claude to extract criteria and search
+    // Call Claude to extract structured criteria
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 4096,
-      system: `You are a helpful real estate agent AI assistant. Your job is to:
-1. Understand the user's property requirements from their natural language input
-2. Extract structured criteria (price range, bedrooms, bathrooms, location, property type, amenities)
-3. Search the available properties
-4. Present the best matches in a friendly, conversational way
+      max_tokens: 2048,
+      system: `You are a property search criteria extractor. Extract structured search criteria from user queries.
 
-Available properties database:
-${JSON.stringify(properties, null, 2)}
+Return a JSON object with these fields:
+{
+  "minPrice": number or null,
+  "maxPrice": number or null,
+  "minBedrooms": number or null,
+  "maxBedrooms": number or null,
+  "minBathrooms": number or null,
+  "maxBathrooms": number or null,
+  "propertyTypes": array of strings or null (e.g. ["Single Family", "Condo"]),
+  "requiredAmenities": array of strings or null (e.g. ["pool", "garage"]),
+  "minSqft": number or null,
+  "maxSqft": number or null
+}
 
-When responding:
-- Extract the criteria from the user's message
-- Filter properties that match their requirements
-- Present 3-5 best matches with details
-- Be conversational and helpful
-- Ask clarifying questions if needed
-- Format your response with property details including address, price, bedrooms, bathrooms, and why it matches their criteria`,
-      messages: messages
+Examples:
+"3 bedroom house under $1 million" → {"minBedrooms": 3, "maxBedrooms": 3, "maxPrice": 1000000, "propertyTypes": ["Single Family"]}
+"condo with parking" → {"propertyTypes": ["Condo"], "requiredAmenities": ["parking"]}
+"large family home" → {"minBedrooms": 4, "propertyTypes": ["Single Family"]}
+"affordable 2 bedroom" → {"minBedrooms": 2, "maxBedrooms": 2, "maxPrice": 700000}
+
+Return ONLY the JSON object, no other text.`,
+      messages: [{
+        role: 'user',
+        content: userPrompt
+      }]
     });
 
-    const assistantMessage = response.content[0].text;
+    const criteriaText = response.content[0].text.trim();
 
-    // Extract property IDs mentioned in the response (simple pattern matching)
-    const matchedPropertyIds = [];
-    properties.forEach(prop => {
-      if (assistantMessage.includes(prop.address) || 
-          assistantMessage.includes(prop.id.toString())) {
-        matchedPropertyIds.push(prop.id);
+    // Parse the criteria
+    let criteria;
+    try {
+      // Remove markdown code blocks if present
+      const jsonText = criteriaText.replace(/```json\n?|\n?```/g, '').trim();
+      criteria = JSON.parse(jsonText);
+    } catch (e) {
+      console.error('Failed to parse criteria:', criteriaText);
+      criteria = {}; // Default to empty criteria
+    }
+
+    console.log('Extracted criteria:', criteria);
+
+    // Filter properties based on criteria
+    let filteredProperties = properties.filter(property => {
+      // Price filter
+      if (criteria.minPrice && property.price < criteria.minPrice) return false;
+      if (criteria.maxPrice && property.price > criteria.maxPrice) return false;
+
+      // Bedrooms filter
+      if (criteria.minBedrooms && property.bedrooms < criteria.minBedrooms) return false;
+      if (criteria.maxBedrooms && property.bedrooms > criteria.maxBedrooms) return false;
+
+      // Bathrooms filter
+      if (criteria.minBathrooms && property.bathrooms < criteria.minBathrooms) return false;
+      if (criteria.maxBathrooms && property.bathrooms > criteria.maxBathrooms) return false;
+
+      // Square footage filter
+      if (criteria.minSqft && property.sqft < criteria.minSqft) return false;
+      if (criteria.maxSqft && property.sqft > criteria.maxSqft) return false;
+
+      // Property type filter
+      if (criteria.propertyTypes && criteria.propertyTypes.length > 0) {
+        if (!criteria.propertyTypes.includes(property.type)) return false;
       }
+
+      // Amenities filter
+      if (criteria.requiredAmenities && criteria.requiredAmenities.length > 0) {
+        const hasAllAmenities = criteria.requiredAmenities.every(amenity =>
+          property.amenities.some(propAmenity =>
+            propAmenity.toLowerCase().includes(amenity.toLowerCase())
+          )
+        );
+        if (!hasAllAmenities) return false;
+      }
+
+      return true;
     });
 
-    // Get matched properties
-    const matchedProperties = properties.filter(p => 
-      matchedPropertyIds.includes(p.id)
-    );
+    // Sort by price (ascending)
+    filteredProperties.sort((a, b) => a.price - b.price);
 
     res.json({
-      message: assistantMessage,
-      properties: matchedProperties.length > 0 ? matchedProperties : properties.slice(0, 3),
-      conversationHistory: [...messages, {
-        role: 'assistant',
-        content: assistantMessage
-      }]
+      criteria: criteria,
+      properties: filteredProperties,
+      totalFound: filteredProperties.length,
+      searchQuery: userPrompt
     });
 
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to process request',
-      message: error.message 
+      message: error.message
     });
   }
 });

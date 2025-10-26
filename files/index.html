@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Property Search - Powered by Claude</title>
+    <title>AI Property Search - Find Your Dream Home</title>
     <style>
         * {
             margin: 0;
@@ -13,165 +14,241 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            height: calc(100vh - 40px);
-        }
-
-        .chat-section {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
         }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 25px;
-            text-align: center;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .header h1 {
             font-size: 28px;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
+        .search-bar {
+            margin-top: 20px;
+            position: relative;
         }
 
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: #f8f9fa;
-        }
-
-        .message {
-            margin-bottom: 15px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .message.user {
-            flex-direction: row-reverse;
-        }
-
-        .message-content {
-            max-width: 80%;
-            padding: 12px 18px;
-            border-radius: 18px;
-            line-height: 1.5;
-        }
-
-        .message.user .message-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.assistant .message-content {
-            background: white;
-            color: #333;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-bottom-left-radius: 4px;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .user .avatar {
-            background: #667eea;
-        }
-
-        .assistant .avatar {
-            background: #764ba2;
-        }
-
-        .input-section {
-            padding: 20px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .input-wrapper {
-            display: flex;
-            gap: 10px;
-        }
-
-        #userInput {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 15px;
+        #searchInput {
+            width: 100%;
+            padding: 18px 180px 18px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
             outline: none;
-            transition: border-color 0.3s;
         }
 
-        #userInput:focus {
-            border-color: #667eea;
-        }
-
-        #sendBtn {
-            padding: 15px 30px;
+        #searchBtn {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            padding: 12px 35px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 25px;
+            border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 15px;
             transition: transform 0.2s;
         }
 
-        #sendBtn:hover {
+        #searchBtn:hover {
             transform: scale(1.05);
         }
 
-        #sendBtn:disabled {
+        #searchBtn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
 
+        .suggestions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-count {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .search-criteria {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .properties-grid {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            max-height: calc(100vh - 350px);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .property-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .property-card.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .property-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .property-content {
+            padding: 15px;
+        }
+
+        .property-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .property-address {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .property-specs {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #666;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .property-specs span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .property-type {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #f0f4ff;
+            color: #667eea;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .amenities {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .amenity-tag {
+            padding: 3px 8px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 8px;
+            font-size: 11px;
+        }
+
         .map-section {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
             display: flex;
             flex-direction: column;
         }
 
         .map-header {
-            padding: 20px;
+            padding: 15px 20px;
             background: #f8f9fa;
             border-bottom: 1px solid #e0e0e0;
         }
 
         .map-header h2 {
-            font-size: 20px;
+            font-size: 18px;
             color: #333;
         }
 
@@ -180,179 +257,135 @@
             min-height: 400px;
         }
 
-        .properties-list {
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 15px;
-            background: #f8f9fa;
-        }
-
-        .property-card {
-            background: white;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .property-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-color: #667eea;
-        }
-
-        .property-card.selected {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-
-        .property-card h3 {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .property-details {
-            display: flex;
-            gap: 15px;
-            color: #666;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-
-        .property-price {
-            font-size: 18px;
-            font-weight: bold;
-            color: #667eea;
-            margin-top: 5px;
-        }
-
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 40px;
             color: #666;
         }
 
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
-            margin: 10px auto;
+            margin: 20px auto;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
-        .suggestions {
-            padding: 15px 20px;
-            background: #f0f4ff;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .suggestions p {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .suggestion-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .chip {
-            padding: 8px 15px;
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
             background: white;
-            border: 1px solid #667eea;
-            color: #667eea;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .chip:hover {
-            background: #667eea;
-            color: white;
+        .no-results h3 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .no-results p {
+            color: #666;
+            margin-bottom: 20px;
         }
 
         @media (max-width: 1024px) {
             .container {
                 grid-template-columns: 1fr;
-                height: auto;
-            }
-
-            .chat-section {
-                min-height: 60vh;
             }
 
             .map-section {
-                min-height: 50vh;
+                position: relative;
+                top: 0;
+                height: 500px;
             }
+
+            .properties-grid {
+                max-height: none;
+            }
+        }
+
+        /* Custom scrollbar */
+        .properties-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .properties-grid::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .properties-grid::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .properties-grid::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="chat-section">
-            <div class="header">
-                <h1>🏠 AI Property Search</h1>
-                <p>Powered by Claude AI - Find your dream home with natural language</p>
-            </div>
-            
-            <div class="chat-messages" id="chatMessages">
-                <div class="message assistant">
-                    <div class="avatar">AI</div>
-                    <div class="message-content">
-                        Hello! I'm your AI property search assistant. Tell me what you're looking for in a home, and I'll help you find the perfect match. For example, you could say "I need a 3 bedroom house under $1 million with a backyard" or "Show me condos in San Francisco with parking."
-                    </div>
-                </div>
+    <div class="header">
+        <div class="header-content">
+            <h1>🏠 AI Property Search</h1>
+            <p>Find your perfect home using natural language - powered by Claude AI</p>
+
+            <div class="search-bar">
+                <input type="text" id="searchInput"
+                    placeholder="Try: '3 bedroom house under $1 million with a pool' or 'affordable condo with parking'"
+                    onkeypress="handleKeyPress(event)">
+                <button id="searchBtn" onclick="searchProperties()">Search</button>
             </div>
 
             <div class="suggestions">
-                <p>Try asking:</p>
-                <div class="suggestion-chips">
-                    <div class="chip" onclick="useSuggestion('I want a 3 bedroom house under $1 million')">3BR under $1M</div>
-                    <div class="chip" onclick="useSuggestion('Show me condos with parking')">Condos with parking</div>
-                    <div class="chip" onclick="useSuggestion('I need a house with a pool and backyard')">House with pool</div>
-                    <div class="chip" onclick="useSuggestion('Family home with 4+ bedrooms')">Large family home</div>
-                </div>
+                <div class="chip" onclick="useQuery('3 bedroom house under $1 million')">3BR under $1M</div>
+                <div class="chip" onclick="useQuery('condo with parking')">Condos with parking</div>
+                <div class="chip" onclick="useQuery('house with pool and backyard')">House with pool</div>
+                <div class="chip" onclick="useQuery('family home with 4+ bedrooms')">Large family home</div>
+                <div class="chip" onclick="useQuery('affordable 2 bedroom apartment')">Affordable 2BR</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="results-section">
+            <div class="results-header" id="resultsHeader">
+                <div class="results-count">Showing all properties</div>
+                <div class="search-criteria" id="searchCriteria" style="display: none;"></div>
             </div>
 
-            <div class="input-section">
-                <div class="input-wrapper">
-                    <input 
-                        type="text" 
-                        id="userInput" 
-                        placeholder="Describe your dream home..."
-                        onkeypress="handleKeyPress(event)"
-                    >
-                    <button id="sendBtn" onclick="sendMessage()">Send</button>
-                </div>
+            <div class="properties-grid" id="propertiesGrid">
+                <!-- Properties will be loaded here -->
             </div>
         </div>
 
         <div class="map-section">
             <div class="map-header">
-                <h2>📍 Property Locations</h2>
+                <h2>📍 Map View</h2>
             </div>
             <div id="map"></div>
-            <div class="properties-list" id="propertiesList"></div>
         </div>
     </div>
 
     <script>
         let map;
         let markers = [];
-        let conversationHistory = [];
+        let allProperties = [];
         const API_URL = 'http://localhost:3000';
 
         // Initialize Google Map
@@ -374,32 +407,92 @@
         }
 
         async function loadAllProperties() {
+            showLoading();
             try {
                 const response = await fetch(`${API_URL}/api/properties`);
-                const properties = await response.json();
-                displayProperties(properties);
+                allProperties = await response.json();
+                displayProperties(allProperties, 'Showing all properties', null);
             } catch (error) {
                 console.error('Error loading properties:', error);
+                showError('Failed to load properties. Make sure the server is running.');
             }
         }
 
-        function displayProperties(properties) {
-            // Clear existing markers
-            markers.forEach(marker => marker.setMap(null));
-            markers = [];
+        function displayProperties(properties, headerText, criteria) {
+            const grid = document.getElementById('propertiesGrid');
+            const resultsHeader = document.getElementById('resultsHeader');
+            const searchCriteriaDiv = document.getElementById('searchCriteria');
 
-            // Clear properties list
-            const propertiesList = document.getElementById('propertiesList');
-            propertiesList.innerHTML = '';
+            grid.innerHTML = '';
+
+            // Update header
+            resultsHeader.querySelector('.results-count').textContent =
+                `${headerText} (${properties.length} ${properties.length === 1 ? 'property' : 'properties'} found)`;
+
+            // Show criteria if available
+            if (criteria && Object.keys(criteria).length > 0) {
+                const criteriaText = formatCriteria(criteria);
+                if (criteriaText) {
+                    searchCriteriaDiv.innerHTML = `<strong>Search criteria:</strong> ${criteriaText}`;
+                    searchCriteriaDiv.style.display = 'block';
+                } else {
+                    searchCriteriaDiv.style.display = 'none';
+                }
+            } else {
+                searchCriteriaDiv.style.display = 'none';
+            }
 
             if (properties.length === 0) {
-                propertiesList.innerHTML = '<div class="loading">No properties found matching your criteria.</div>';
+                grid.innerHTML = `
+                    <div class="no-results" style="grid-column: 1/-1;">
+                        <h3>No properties found</h3>
+                        <p>Try adjusting your search criteria</p>
+                    </div>
+                `;
+                clearMarkers();
                 return;
             }
 
-            // Add markers and list items
-            properties.forEach((property, index) => {
-                // Add marker
+            // Display property cards
+            properties.forEach(property => {
+                const card = document.createElement('div');
+                card.className = 'property-card';
+                card.id = `property-${property.id}`;
+                card.onclick = () => focusProperty(property);
+
+                const amenitiesTags = property.amenities.slice(0, 3).map(amenity =>
+                    `<span class="amenity-tag">${amenity}</span>`
+                ).join('');
+
+                card.innerHTML = `
+                    <img src="${property.image}" alt="${property.address}" class="property-image">
+                    <div class="property-content">
+                        <div class="property-price">$${property.price.toLocaleString()}</div>
+                        <div class="property-address">${property.address}</div>
+                        <div class="property-specs">
+                            <span>🛏️ ${property.bedrooms} bed</span>
+                            <span>🚿 ${property.bathrooms} bath</span>
+                            <span>📐 ${property.sqft} sqft</span>
+                        </div>
+                        <span class="property-type">${property.type}</span>
+                        ${amenitiesTags ? `<div class="amenities">${amenitiesTags}</div>` : ''}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Update map markers
+            updateMapMarkers(properties);
+        }
+
+        function updateMapMarkers(properties) {
+            // Clear existing markers
+            clearMarkers();
+
+            if (properties.length === 0) return;
+
+            // Add new markers
+            properties.forEach(property => {
                 const marker = new google.maps.Marker({
                     position: { lat: property.lat, lng: property.lng },
                     map: map,
@@ -407,12 +500,12 @@
                     label: {
                         text: `$${(property.price / 1000).toFixed(0)}k`,
                         color: 'white',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         fontWeight: 'bold'
                     },
                     icon: {
                         path: google.maps.SymbolPath.CIRCLE,
-                        scale: 20,
+                        scale: 18,
                         fillColor: '#667eea',
                         fillOpacity: 0.9,
                         strokeColor: 'white',
@@ -422,49 +515,27 @@
 
                 const infoWindow = new google.maps.InfoWindow({
                     content: `
-                        <div style="padding: 10px;">
-                            <img src="${property.image}" style="width: 200px; border-radius: 8px; margin-bottom: 8px;">
+                        <div style="padding: 10px; max-width: 250px;">
+                            <img src="${property.image}" style="width: 100%; border-radius: 8px; margin-bottom: 10px;">
                             <h3 style="margin: 0 0 5px 0; font-size: 16px;">${property.address}</h3>
-                            <p style="margin: 5px 0; font-size: 20px; color: #667eea; font-weight: bold;">$${property.price.toLocaleString()}</p>
-                            <p style="margin: 5px 0;">${property.bedrooms} bed • ${property.bathrooms} bath • ${property.sqft} sqft</p>
-                            <p style="margin: 5px 0; color: #666;">${property.type}</p>
+                            <p style="margin: 8px 0; font-size: 22px; color: #667eea; font-weight: bold;">$${property.price.toLocaleString()}</p>
+                            <p style="margin: 5px 0; color: #666;">${property.bedrooms} bed • ${property.bathrooms} bath • ${property.sqft} sqft</p>
+                            <p style="margin: 5px 0; color: #666; font-weight: 500;">${property.type}</p>
                         </div>
                     `
                 });
 
                 marker.addListener('click', () => {
-                    markers.forEach(m => {
-                        if (m.infoWindow) m.infoWindow.close();
-                    });
+                    closeAllInfoWindows();
                     infoWindow.open(map, marker);
-                    highlightPropertyCard(property.id);
+                    highlightProperty(property.id);
                 });
 
                 marker.infoWindow = infoWindow;
                 markers.push(marker);
-
-                // Add to list
-                const card = document.createElement('div');
-                card.className = 'property-card';
-                card.id = `property-${property.id}`;
-                card.innerHTML = `
-                    <h3>${property.address}</h3>
-                    <div class="property-price">$${property.price.toLocaleString()}</div>
-                    <div class="property-details">
-                        <span>🛏️ ${property.bedrooms} bed</span>
-                        <span>🚿 ${property.bathrooms} bath</span>
-                        <span>📐 ${property.sqft} sqft</span>
-                    </div>
-                `;
-                card.onclick = () => {
-                    map.panTo({ lat: property.lat, lng: property.lng });
-                    map.setZoom(15);
-                    google.maps.event.trigger(marker, 'click');
-                };
-                propertiesList.appendChild(card);
             });
 
-            // Fit bounds to show all markers
+            // Fit map to show all markers
             if (markers.length > 0) {
                 const bounds = new google.maps.LatLngBounds();
                 markers.forEach(marker => bounds.extend(marker.getPosition()));
@@ -472,7 +543,32 @@
             }
         }
 
-        function highlightPropertyCard(propertyId) {
+        function clearMarkers() {
+            markers.forEach(marker => marker.setMap(null));
+            markers = [];
+        }
+
+        function closeAllInfoWindows() {
+            markers.forEach(marker => {
+                if (marker.infoWindow) marker.infoWindow.close();
+            });
+        }
+
+        function focusProperty(property) {
+            map.panTo({ lat: property.lat, lng: property.lng });
+            map.setZoom(15);
+
+            const marker = markers.find(m =>
+                m.getPosition().lat() === property.lat &&
+                m.getPosition().lng() === property.lng
+            );
+
+            if (marker) {
+                google.maps.event.trigger(marker, 'click');
+            }
+        }
+
+        function highlightProperty(propertyId) {
             document.querySelectorAll('.property-card').forEach(card => {
                 card.classList.remove('selected');
             });
@@ -483,46 +579,61 @@
             }
         }
 
-        function addMessage(content, role) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
-            messageDiv.innerHTML = `
-                <div class="avatar">${role === 'user' ? 'You' : 'AI'}</div>
-                <div class="message-content">${content}</div>
-            `;
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        function formatCriteria(criteria) {
+            const parts = [];
+
+            if (criteria.minPrice || criteria.maxPrice) {
+                if (criteria.minPrice && criteria.maxPrice) {
+                    parts.push(`$${(criteria.minPrice / 1000)}k - $${(criteria.maxPrice / 1000)}k`);
+                } else if (criteria.maxPrice) {
+                    parts.push(`Under $${(criteria.maxPrice / 1000)}k`);
+                } else if (criteria.minPrice) {
+                    parts.push(`Over $${(criteria.minPrice / 1000)}k`);
+                }
+            }
+
+            if (criteria.minBedrooms === criteria.maxBedrooms && criteria.minBedrooms) {
+                parts.push(`${criteria.minBedrooms} bedrooms`);
+            } else {
+                if (criteria.minBedrooms) parts.push(`${criteria.minBedrooms}+ bedrooms`);
+                if (criteria.maxBedrooms) parts.push(`up to ${criteria.maxBedrooms} bedrooms`);
+            }
+
+            if (criteria.minBathrooms) parts.push(`${criteria.minBathrooms}+ bathrooms`);
+
+            if (criteria.propertyTypes && criteria.propertyTypes.length > 0) {
+                parts.push(criteria.propertyTypes.join(', '));
+            }
+
+            if (criteria.requiredAmenities && criteria.requiredAmenities.length > 0) {
+                parts.push(`with ${criteria.requiredAmenities.join(', ')}`);
+            }
+
+            if (criteria.minSqft || criteria.maxSqft) {
+                if (criteria.minSqft && criteria.maxSqft) {
+                    parts.push(`${criteria.minSqft}-${criteria.maxSqft} sqft`);
+                } else if (criteria.minSqft) {
+                    parts.push(`${criteria.minSqft}+ sqft`);
+                } else if (criteria.maxSqft) {
+                    parts.push(`up to ${criteria.maxSqft} sqft`);
+                }
+            }
+
+            return parts.join(' • ');
         }
 
-        function showLoading() {
-            const messagesDiv = document.getElementById('chatMessages');
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'loading';
-            loadingDiv.id = 'loading';
-            loadingDiv.innerHTML = '<div class="spinner"></div><p>Searching properties...</p>';
-            messagesDiv.appendChild(loadingDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
+        async function searchProperties() {
+            const input = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const query = input.value.trim();
 
-        function hideLoading() {
-            const loading = document.getElementById('loading');
-            if (loading) loading.remove();
-        }
+            if (!query) {
+                loadAllProperties();
+                return;
+            }
 
-        async function sendMessage() {
-            const input = document.getElementById('userInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const message = input.value.trim();
-
-            if (!message) return;
-
-            // Add user message
-            addMessage(message, 'user');
-            input.value = '';
-            sendBtn.disabled = true;
-
-            // Show loading
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Searching...';
             showLoading();
 
             try {
@@ -531,54 +642,66 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        userPrompt: message,
-                        conversationHistory: conversationHistory
-                    })
+                    body: JSON.stringify({ userPrompt: query })
                 });
 
                 const data = await response.json();
-                
-                hideLoading();
 
                 if (data.error) {
-                    addMessage(`Sorry, there was an error: ${data.message}. Make sure the server is running with a valid ANTHROPIC_API_KEY.`, 'assistant');
+                    showError(`Error: ${data.message}. Make sure ANTHROPIC_API_KEY is set.`);
                 } else {
-                    addMessage(data.message, 'assistant');
-                    conversationHistory = data.conversationHistory;
-                    
-                    if (data.properties && data.properties.length > 0) {
-                        displayProperties(data.properties);
-                    }
+                    const headerText = data.properties.length > 0
+                        ? `Search results for "${query}"`
+                        : 'No properties found';
+                    displayProperties(data.properties, headerText, data.criteria);
                 }
             } catch (error) {
-                hideLoading();
-                addMessage('Sorry, I couldn\'t connect to the server. Please make sure the backend is running on port 3000.', 'assistant');
                 console.error('Error:', error);
+                showError('Failed to connect to server. Make sure it\'s running on port 3000.');
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Search';
             }
-
-            sendBtn.disabled = false;
-            input.focus();
         }
 
-        function useSuggestion(text) {
-            document.getElementById('userInput').value = text;
-            sendMessage();
+        function showLoading() {
+            const grid = document.getElementById('propertiesGrid');
+            grid.innerHTML = `
+                <div class="loading" style="grid-column: 1/-1;">
+                    <div class="spinner"></div>
+                    <p>Searching properties...</p>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const grid = document.getElementById('propertiesGrid');
+            grid.innerHTML = `
+                <div class="no-results" style="grid-column: 1/-1;">
+                    <h3>⚠️ Error</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function useQuery(query) {
+            document.getElementById('searchInput').value = query;
+            searchProperties();
         }
 
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
-                sendMessage();
+                searchProperties();
             }
         }
 
-        // Load Google Maps API
+        // Initialize map when page loads
         window.initMap = initMap;
     </script>
-    
+
     <!-- Replace YOUR_GOOGLE_MAPS_API_KEY with your actual API key -->
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap">
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap">
     </script>
 </body>
+
 </html>
