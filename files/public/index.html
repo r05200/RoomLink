@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Property Search - Find Your Dream Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .search-bar {
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 18px 180px 18px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            outline: none;
+        }
+
+        #searchBtn {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            padding: 12px 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: transform 0.2s;
+        }
+
+        #searchBtn:hover {
+            transform: scale(1.05);
+        }
+
+        #searchBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .suggestions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-count {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: none;
+        }
+
+        .back-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .back-btn.visible {
+            display: block;
+        }
+
+        .search-criteria {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .properties-grid {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            max-height: calc(100vh - 350px);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .property-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .property-card.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .property-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .property-content {
+            padding: 15px;
+        }
+
+        .property-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .property-address {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .property-specs {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #666;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .property-specs span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .property-type {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #f0f4ff;
+            color: #667eea;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .amenities {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .amenity-tag {
+            padding: 3px 8px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 8px;
+            font-size: 11px;
+        }
+
+        /* Property Detail Panel */
+        .property-detail {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-height: calc(100vh - 350px);
+            overflow-y: auto;
+        }
+
+        .property-detail.visible {
+            display: block;
+        }
+
+        .property-detail .detail-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .property-detail .detail-content {
+            padding: 30px;
+        }
+
+        .property-detail .detail-price {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .property-detail .detail-address {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .property-detail .detail-specs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .property-detail .spec-item {
+            text-align: center;
+        }
+
+        .property-detail .spec-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            display: block;
+        }
+
+        .property-detail .spec-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .property-detail .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .property-detail .detail-section h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .property-detail .amenities-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .property-detail .amenity-item {
+            padding: 10px 15px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .property-detail .amenity-item::before {
+            content: "✓";
+            font-weight: bold;
+        }
+
+        .property-detail .contact-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
+
+        .property-detail .contact-section h3 {
+            border: none;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .property-detail .contact-info {
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .property-detail .contact-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .property-detail .contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .map-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-header {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .map-header h2 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .places-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .places-dropdown {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .places-dropdown:hover {
+            background: #f0f4ff;
+        }
+
+        .clear-places-btn {
+            padding: 8px 16px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: none;
+        }
+
+        .clear-places-btn:hover {
+            background: #ff5252;
+        }
+
+        .clear-places-btn.visible {
+            display: block;
+        }
+
+        #map {
+            flex: 1;
+            min-height: 400px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-results h3 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .no-results p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .map-section {
+                position: relative;
+                top: 0;
+                height: 500px;
+            }
+
+            .properties-grid {
+                max-height: none;
+            }
+
+            .places-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .property-detail .detail-specs {
+                grid-template-columns: 1fr;
+            }
+
+            .property-detail .amenities-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Custom scrollbar */
+        .properties-grid::-webkit-scrollbar,
+        .property-detail::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .properties-grid::-webkit-scrollbar-track,
+        .property-detail::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .properties-grid::-webkit-scrollbar-thumb,
+        .property-detail::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .properties-grid::-webkit-scrollbar-thumb:hover,
+        .property-detail::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 20px auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+        }
+
+        .close {
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            display: none;
+            padding: 15px;
+            background: #4caf50;
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .roommate-fields {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .roommate-fields.visible {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h1>🏠 AI Property Search</h1>
+                <button onclick="openPostModal()"
+                    style="padding: 12px 24px; background: white; color: #667eea; border: 2px solid white; border-radius: 25px; font-weight: bold; cursor: pointer; transition: all 0.3s;">
+                    + Post Property
+                </button>
+            </div>
+            <p>Find your perfect home using natural language - powered by Claude AI</p>
+
+            <div class="search-bar">
+                <input type="text" id="searchInput"
+                    placeholder="Try: '3 bedroom house under $3000 with a pool' or 'affordable condo with parking'"
+                    onkeypress="handleKeyPress(event)">
+                <button id="searchBtn" onclick="searchProperties()">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="results-section">
+            <div class="results-header" id="resultsHeader">
+                <div class="results-count">Showing all properties</div>
+                <button class="back-btn" id="backBtn" onclick="showAllProperties()">← Back to All Properties</button>
+                <div class="search-criteria" id="searchCriteria" style="display: none;"></div>
+            </div>
+
+            <div class="properties-grid" id="propertiesGrid">
+                <!-- Properties will be loaded here -->
+            </div>
+
+            <div class="property-detail" id="propertyDetail">
+                <!-- Property details will be loaded here -->
+            </div>
+        </div>
+
+        <div class="map-section">
+            <div class="map-header">
+                <h2>📍 Map View</h2>
+                <div class="places-controls">
+                    <select class="places-dropdown" id="placesDropdown" onchange="searchNearbyPlaces()">
+                        <option value="">Find Nearby Places...</option>
+                        <option value="restaurant">🍽️ Restaurants</option>
+                        <option value="cafe">☕ Cafes</option>
+                        <option value="bar">🍺 Bars</option>
+                        <option value="grocery_or_supermarket">🛒 Grocery Stores</option>
+                        <option value="school">🏫 Schools</option>
+                        <option value="park">🌳 Parks</option>
+                        <option value="gym">💪 Gyms</option>
+                        <option value="hospital">🏥 Hospitals</option>
+                        <option value="pharmacy">💊 Pharmacies</option>
+                        <option value="bank">🏦 Banks</option>
+                        <option value="gas_station">⛽ Gas Stations</option>
+                        <option value="shopping_mall">🛍️ Shopping Malls</option>
+                        <option value="movie_theater">🎬 Movie Theaters</option>
+                        <option value="library">📚 Libraries</option>
+                        <option value="transit_station">🚇 Transit Stations</option>
+                    </select>
+                    <button class="clear-places-btn" id="clearPlacesBtn" onclick="clearPlaces()">Clear Places</button>
+                </div>
+            </div>
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- Post Property Modal -->
+    <div id="postModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📝 Post Your Property</h2>
+                <span class="close" onclick="closePostModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="successMessage" class="success-message">
+                    ✅ Property posted successfully!
+                </div>
+
+                <form id="postPropertyForm" onsubmit="submitProperty(event)">
+                    <!-- Property Details Section -->
+                    <div class="form-section">
+                        <h3>🏠 Property Details</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="address">Address *</label>
+                                <input type="text" id="address" required placeholder="123 Main Street, City, State ZIP">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="price">Price ($) *</label>
+                                <input type="number" id="price" required placeholder="850000" min="0">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="propertyType">Property Type *</label>
+                                <select id="propertyType" required>
+                                    <option value="">Select type...</option>
+                                    <option value="Single Family">Single Family Home</option>
+                                    <option value="Condo">Condo</option>
+                                    <option value="Townhouse">Townhouse</option>
+                                    <option value="Apartment">Apartment</option>
+                                    <option value="Studio">Studio</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bedrooms">Bedrooms *</label>
+                                <input type="number" id="bedrooms" required placeholder="3" min="0" max="20">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bathrooms">Bathrooms *</label>
+                                <input type="number" id="bathrooms" required placeholder="2" min="0" max="20"
+                                    step="0.5">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="sqft">Square Feet *</label>
+                                <input type="number" id="sqft" required placeholder="1800" min="0">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="latitude">Latitude *</label>
+                                <input type="number" id="latitude" required placeholder="37.7749" step="0.0001">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="longitude">Longitude *</label>
+                                <input type="number" id="longitude" required placeholder="-122.4194" step="0.0001">
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="imageUrl">Property Image URL (optional)</label>
+                                <input type="url" id="imageUrl" placeholder="https://example.com/property-image.jpg">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Amenities Section -->
+                    <div class="form-section">
+                        <h3>✨ Amenities</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="amenities">Amenities (separate with commas)</label>
+                                <textarea id="amenities" rows="3"
+                                    placeholder="e.g., parking, gym, pool, balcony, garage, air conditioning, backyard, fireplace"></textarea>
+                                <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                                    Enter amenities separated by commas
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Roommate Section -->
+                    <div class="form-section">
+                        <h3>👥 Roommate Information (Optional)</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="lookingForRoommate">Looking for a roommate?</label>
+                                <select id="lookingForRoommate" onchange="toggleRoommateFields()">
+                                    <option value="no">No</option>
+                                    <option value="yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="roommateFields" class="roommate-fields">
+                            <div class="form-group">
+                                <label for="roommateCount">Number of Roommates Needed</label>
+                                <input type="number" id="roommateCount" placeholder="1" min="0" max="10">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="monthlyRent">Monthly Rent per Roommate ($)</label>
+                                <input type="number" id="monthlyRent" placeholder="1200" min="0">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="moveInDate">Available Move-in Date</label>
+                                <input type="date" id="moveInDate">
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="roommatePreferences">Roommate Preferences</label>
+                                <textarea id="roommatePreferences"
+                                    placeholder="e.g., Non-smoker, quiet, professional, pet-friendly..."></textarea>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="description">Additional Description</label>
+                                <textarea id="description"
+                                    placeholder="Describe the property, neighborhood, lifestyle, etc."></textarea>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="contactEmail">Contact Email *</label>
+                                <input type="email" id="contactEmail" required placeholder="your.email@example.com">
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="contactPhone">Contact Phone</label>
+                                <input type="tel" id="contactPhone" placeholder="(555) 123-4567">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        Post Property
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let map;
+        let markers = [];
+        let markerInfoWindows = [];
+        let placeMarkers = [];
+        let allProperties = [];
+        let placesService;
+        let currentPropertyId = null;
+        const API_URL = 'http://localhost:3000';
+
+        // Initialize Google Map
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 43.4643, lng: -80.5204 }, // Waterloo, ON
+                zoom: 12,
+                styles: [
+                    {
+                        featureType: "poi",
+                        elementType: "labels",
+                        stylers: [{ visibility: "off" }]
+                    }
+                ]
+            });
+
+            // Initialize Places Service
+            placesService = new google.maps.places.PlacesService(map);
+
+            // Load initial properties
+            loadAllProperties();
+        }
+
+        async function loadAllProperties() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_URL}/api/properties`);
+                allProperties = await response.json();
+                displayProperties(allProperties, 'Showing all properties', null);
+            } catch (error) {
+                console.error('Error loading properties:', error);
+                showError('Failed to load properties. Make sure the server is running.');
+            }
+        }
+
+        function displayProperties(properties, headerText, criteria) {
+            const grid = document.getElementById('propertiesGrid');
+            const resultsHeader = document.getElementById('resultsHeader');
+            const searchCriteriaDiv = document.getElementById('searchCriteria');
+
+            grid.innerHTML = '';
+            grid.style.display = 'grid';
+            document.getElementById('propertyDetail').classList.remove('visible');
+            document.getElementById('backBtn').classList.remove('visible');
+            currentPropertyId = null;
+
+            // Update header
+            resultsHeader.querySelector('.results-count').textContent =
+                `${headerText} (${properties.length} ${properties.length === 1 ? 'property' : 'properties'} found)`;
+
+            // Show criteria if available
+            if (criteria && Object.keys(criteria).length > 0) {
+                const criteriaText = formatCriteria(criteria);
+                if (criteriaText) {
+                    searchCriteriaDiv.innerHTML = `<strong>Search criteria:</strong> ${criteriaText}`;
+                    searchCriteriaDiv.style.display = 'block';
+                }
+            } else {
+                searchCriteriaDiv.style.display = 'none';
+            }
+
+            // Clear existing markers
+            markers.forEach(marker => marker.setMap(null));
+            markerInfoWindows.forEach(infoWindow => infoWindow.close());
+            markers = [];
+            markerInfoWindows = [];
+
+            if (properties.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-results" style="grid-column: 1/-1;">
+                        <h3>🔍 No Properties Found</h3>
+                        <p>Try adjusting your search criteria</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Calculate bounds for map
+            const bounds = new google.maps.LatLngBounds();
+
+            // Display properties
+            properties.forEach((property, index) => {
+                const card = document.createElement('div');
+                card.className = 'property-card';
+                card.onclick = () => selectProperty(property.id);
+
+                card.innerHTML = `
+                    <img src="${property.image}" alt="${property.address}" class="property-image">
+                    <div class="property-content">
+                        <div class="property-price">$${property.price.toLocaleString()}</div>
+                        <div class="property-address">${property.address}</div>
+                        <div class="property-specs">
+                            <span>🛏️ ${property.bedrooms} bed</span>
+                            <span>🚿 ${property.bathrooms} bath</span>
+                            <span>📐 ${property.sqft} sqft</span>
+                        </div>
+                        <span class="property-type">${property.type}</span>
+                        ${property.amenities && property.amenities.length > 0 ? `
+                            <div class="amenities">
+                                ${property.amenities.slice(0, 3).map(a =>
+                    `<span class="amenity-tag">${a}</span>`
+                ).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                grid.appendChild(card);
+
+                // Add marker to map with hover preview
+                const marker = new google.maps.Marker({
+                    position: { lat: property.lat, lng: property.lng },
+                    map: map,
+                    title: property.address,
+                    label: {
+                        text: `$${(property.price / 1000).toFixed(0)}k`,
+                        color: 'white',
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                    },
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 25,
+                        fillColor: '#667eea',
+                        fillOpacity: 0.9,
+                        strokeColor: 'white',
+                        strokeWeight: 3
+                    }
+                });
+
+                // Create info window for hover preview
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="padding: 10px; max-width: 250px;">
+                            <img src="${property.image}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+                            <div style="font-size: 18px; font-weight: bold; color: #667eea; margin-bottom: 5px;">
+                                $${property.price.toLocaleString()}
+                            </div>
+                            <div style="font-size: 13px; color: #666; margin-bottom: 8px;">
+                                ${property.address}
+                            </div>
+                            <div style="font-size: 12px; color: #888;">
+                                ${property.bedrooms} bed • ${property.bathrooms} bath • ${property.sqft} sqft
+                            </div>
+                            <div style="margin-top: 8px; font-size: 11px; color: #667eea; cursor: pointer;">
+                                Click for full details →
+                            </div>
+                        </div>
+                    `
+                });
+
+                // Hover to show preview
+                marker.addListener('mouseover', () => {
+                    infoWindow.open(map, marker);
+                });
+
+                marker.addListener('mouseout', () => {
+                    infoWindow.close();
+                });
+
+                // Click to show full details
+                marker.addListener('click', () => {
+                    selectProperty(property.id);
+                });
+
+                markers.push(marker);
+                markerInfoWindows.push(infoWindow);
+                bounds.extend(marker.getPosition());
+            });
+
+            // Fit map to show all properties
+            if (properties.length > 0) {
+                map.fitBounds(bounds);
+                if (properties.length === 1) {
+                    map.setZoom(15);
+                }
+            }
+        }
+
+        function selectProperty(propertyId) {
+            const property = allProperties.find(p => p.id === propertyId);
+            if (!property) return;
+
+            currentPropertyId = propertyId;
+
+            // Hide grid, show detail panel
+            document.getElementById('propertiesGrid').style.display = 'none';
+            const detailPanel = document.getElementById('propertyDetail');
+            detailPanel.classList.add('visible');
+            document.getElementById('backBtn').classList.add('visible');
+
+            // Build amenities HTML
+            let amenitiesHTML = '';
+            if (property.amenities && property.amenities.length > 0) {
+                amenitiesHTML = `
+                    <div class="detail-section">
+                        <h3>✨ Amenities</h3>
+                        <div class="amenities-list">
+                            ${property.amenities.map(amenity =>
+                    `<div class="amenity-item">${amenity}</div>`
+                ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Build roommate info HTML
+            let roommateHTML = '';
+            if (property.roommate && property.roommate.lookingForRoommate) {
+                roommateHTML = `
+                    <div class="detail-section">
+                        <h3>👥 Roommate Information</h3>
+                        <div style="line-height: 1.8;">
+                            ${property.roommate.roommateCount ? `<p><strong>Roommates Needed:</strong> ${property.roommate.roommateCount}</p>` : ''}
+                            ${property.roommate.monthlyRent ? `<p><strong>Monthly Rent per Roommate:</strong> $${property.roommate.monthlyRent.toLocaleString()}</p>` : ''}
+                            ${property.roommate.moveInDate ? `<p><strong>Move-in Date:</strong> ${property.roommate.moveInDate}</p>` : ''}
+                            ${property.roommate.preferences ? `<p><strong>Preferences:</strong> ${property.roommate.preferences}</p>` : ''}
+                            ${property.roommate.description ? `<p><strong>Description:</strong> ${property.roommate.description}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Build contact info HTML
+            let contactHTML = '';
+            if (property.contact && (property.contact.email || property.contact.phone)) {
+                contactHTML = `
+                    <div class="contact-section">
+                        <h3>📞 Contact Information</h3>
+                        <div class="contact-info">
+                            ${property.contact.email ? `<p><strong>Email:</strong> ${property.contact.email}</p>` : ''}
+                            ${property.contact.phone ? `<p><strong>Phone:</strong> ${property.contact.phone}</p>` : ''}
+                        </div>
+                        ${property.contact.email ? `
+                            <a href="mailto:${property.contact.email}" class="contact-btn">
+                                Send Email
+                            </a>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Display property details
+            detailPanel.innerHTML = `
+                <img src="${property.image}" alt="${property.address}" class="detail-image">
+                <div class="detail-content">
+                    <div class="detail-price">$${property.price.toLocaleString()}</div>
+                    <div class="detail-address">${property.address}</div>
+                    <span class="property-type">${property.type}</span>
+                    
+                    <div class="detail-specs">
+                        <div class="spec-item">
+                            <span class="spec-value">${property.bedrooms}</span>
+                            <span class="spec-label">Bedrooms</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-value">${property.bathrooms}</span>
+                            <span class="spec-label">Bathrooms</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-value">${property.sqft.toLocaleString()}</span>
+                            <span class="spec-label">Square Feet</span>
+                        </div>
+                    </div>
+
+                    ${amenitiesHTML}
+                    ${roommateHTML}
+                    ${contactHTML}
+                </div>
+            `;
+
+            // Pan map to property and zoom in
+            map.panTo({ lat: property.lat, lng: property.lng });
+            map.setZoom(16);
+
+            // Close all info windows
+            markerInfoWindows.forEach(infoWindow => infoWindow.close());
+
+            // Scroll detail panel to top
+            detailPanel.scrollTop = 0;
+        }
+
+        function showAllProperties() {
+            // Go back to list view
+            displayProperties(allProperties, 'Showing all properties', null);
+        }
+
+        function formatCriteria(criteria) {
+            const parts = [];
+
+            if (criteria.minPrice || criteria.maxPrice) {
+                if (criteria.minPrice && criteria.maxPrice) {
+                    parts.push(`$${criteria.minPrice.toLocaleString()} - $${criteria.maxPrice.toLocaleString()}`);
+                } else if (criteria.minPrice) {
+                    parts.push(`Over $${criteria.minPrice.toLocaleString()}`);
+                } else if (criteria.maxPrice) {
+                    parts.push(`Under $${criteria.maxPrice.toLocaleString()}`);
+                }
+            }
+
+            if (criteria.minBedrooms || criteria.maxBedrooms) {
+                if (criteria.minBedrooms && criteria.maxBedrooms && criteria.minBedrooms === criteria.maxBedrooms) {
+                    parts.push(`${criteria.minBedrooms} bedrooms`);
+                } else if (criteria.minBedrooms) {
+                    parts.push(`${criteria.minBedrooms}+ bedrooms`);
+                }
+            }
+
+            if (criteria.minBathrooms) parts.push(`${criteria.minBathrooms}+ bathrooms`);
+
+            if (criteria.propertyTypes && criteria.propertyTypes.length > 0) {
+                parts.push(criteria.propertyTypes.join(', '));
+            }
+
+            if (criteria.requiredAmenities && criteria.requiredAmenities.length > 0) {
+                parts.push(`with ${criteria.requiredAmenities.join(', ')}`);
+            }
+
+            if (criteria.minSqft || criteria.maxSqft) {
+                if (criteria.minSqft && criteria.maxSqft) {
+                    parts.push(`${criteria.minSqft}-${criteria.maxSqft} sqft`);
+                } else if (criteria.minSqft) {
+                    parts.push(`${criteria.minSqft}+ sqft`);
+                } else if (criteria.maxSqft) {
+                    parts.push(`up to ${criteria.maxSqft} sqft`);
+                }
+            }
+
+            return parts.join(' • ');
+        }
+
+        async function searchProperties() {
+            const input = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const query = input.value.trim();
+
+            if (!query) {
+                loadAllProperties();
+                return;
+            }
+
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Searching...';
+            showLoading();
+
+            try {
+                const response = await fetch(`${API_URL}/api/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userPrompt: query })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(`Error: ${data.message}. Make sure ANTHROPIC_API_KEY is set.`);
+                } else {
+                    const headerText = data.properties.length > 0
+                        ? `Search results for "${query}"`
+                        : 'No properties found';
+                    displayProperties(data.properties, headerText, data.criteria);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Failed to connect to server. Make sure it is running on port 3000.');
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Search';
+            }
+        }
+
+        function showLoading() {
+            const grid = document.getElementById('propertiesGrid');
+            grid.style.display = 'grid';
+            grid.innerHTML = `
+                <div class="loading" style="grid-column: 1/-1;">
+                    <div class="spinner"></div>
+                    <p>Searching properties...</p>
+                </div>
+            `;
+            document.getElementById('propertyDetail').classList.remove('visible');
+            document.getElementById('backBtn').classList.remove('visible');
+        }
+
+        function showError(message) {
+            const grid = document.getElementById('propertiesGrid');
+            grid.style.display = 'grid';
+            grid.innerHTML = `
+                <div class="no-results" style="grid-column: 1/-1;">
+                    <h3>⚠️ Error</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            document.getElementById('propertyDetail').classList.remove('visible');
+            document.getElementById('backBtn').classList.remove('visible');
+        }
+
+        function useQuery(query) {
+            document.getElementById('searchInput').value = query;
+            searchProperties();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchProperties();
+            }
+        }
+
+        // Search for nearby places
+        function searchNearbyPlaces() {
+            const dropdown = document.getElementById('placesDropdown');
+            const placeType = dropdown.value;
+
+            if (!placeType) {
+                clearPlaces();
+                return;
+            }
+
+            // Get center of all properties or selected property
+            let center;
+            if (currentPropertyId) {
+                const property = allProperties.find(p => p.id === currentPropertyId);
+                center = new google.maps.LatLng(property.lat, property.lng);
+            } else {
+                const bounds = new google.maps.LatLngBounds();
+                markers.forEach(marker => bounds.extend(marker.getPosition()));
+                center = bounds.getCenter();
+            }
+
+            // Clear existing place markers
+            clearPlaces();
+
+            // Search for places
+            const request = {
+                location: center,
+                radius: 3000, // 3km radius
+                type: placeType
+            };
+
+            placesService.nearbySearch(request, (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                    results.forEach(place => {
+                        createPlaceMarker(place);
+                    });
+
+                    // Show clear button
+                    document.getElementById('clearPlacesBtn').classList.add('visible');
+
+                    console.log(`Found ${results.length} ${placeType}s nearby`);
+                }
+            });
+        }
+
+        function createPlaceMarker(place) {
+            const marker = new google.maps.Marker({
+                position: place.geometry.location,
+                map: map,
+                title: place.name,
+                icon: {
+                    url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                    scaledSize: new google.maps.Size(40, 40)
+                }
+            });
+
+            const infowindow = new google.maps.InfoWindow({
+                content: `
+                    <div style="padding: 10px;">
+                        <h3 style="margin: 0 0 5px 0; font-size: 16px;">${place.name}</h3>
+                        <p style="margin: 0; font-size: 13px; color: #666;">${place.vicinity}</p>
+                        ${place.rating ? `<p style="margin: 5px 0 0 0; font-size: 13px;">⭐ ${place.rating} / 5</p>` : ''}
+                    </div>
+                `
+            });
+
+            marker.addListener('click', () => {
+                infowindow.open(map, marker);
+            });
+
+            placeMarkers.push(marker);
+        }
+
+        function clearPlaces() {
+            // Remove all place markers
+            placeMarkers.forEach(marker => marker.setMap(null));
+            placeMarkers = [];
+
+            // Reset dropdown
+            document.getElementById('placesDropdown').value = '';
+
+            // Hide clear button
+            document.getElementById('clearPlacesBtn').classList.remove('visible');
+        }
+
+        // Initialize map when page loads
+        window.initMap = initMap;
+
+        // Modal functions
+        function openPostModal() {
+            document.getElementById('postModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+
+            // Initialize autocomplete when modal opens (gives time for input to be visible)
+            setTimeout(() => {
+                initAutocomplete();
+            }, 100);
+        }
+
+        function closePostModal() {
+            document.getElementById('postModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('postPropertyForm').reset();
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function (event) {
+            const modal = document.getElementById('postModal');
+            if (event.target === modal) {
+                closePostModal();
+            }
+        }
+
+        // Toggle roommate fields
+        function toggleRoommateFields() {
+            const select = document.getElementById('lookingForRoommate');
+            const fields = document.getElementById('roommateFields');
+
+            if (select.value === 'yes') {
+                fields.classList.add('visible');
+            } else {
+                fields.classList.remove('visible');
+            }
+        }
+
+        // Submit property form
+        async function submitProperty(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Posting...';
+
+            // Get form data
+            const formData = {
+                address: document.getElementById('address').value,
+                price: parseInt(document.getElementById('price').value),
+                propertyType: document.getElementById('propertyType').value,
+                bedrooms: parseInt(document.getElementById('bedrooms').value),
+                bathrooms: parseFloat(document.getElementById('bathrooms').value),
+                sqft: parseInt(document.getElementById('sqft').value),
+                latitude: parseFloat(document.getElementById('latitude').value),
+                longitude: parseFloat(document.getElementById('longitude').value),
+                imageUrl: document.getElementById('imageUrl').value || 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400',
+                amenities: document.getElementById('amenities').value
+                    .split(',')
+                    .map(a => a.trim())
+                    .filter(a => a.length > 0),
+                roommate: {
+                    lookingForRoommate: document.getElementById('lookingForRoommate').value === 'yes',
+                    roommateCount: parseInt(document.getElementById('roommateCount').value) || 0,
+                    monthlyRent: parseInt(document.getElementById('monthlyRent').value) || 0,
+                    moveInDate: document.getElementById('moveInDate').value,
+                    preferences: document.getElementById('roommatePreferences').value,
+                    description: document.getElementById('description').value
+                },
+                contact: {
+                    email: document.getElementById('contactEmail').value,
+                    phone: document.getElementById('contactPhone').value
+                }
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/properties`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Show success message
+                    document.getElementById('successMessage').style.display = 'block';
+
+                    // Reset form
+                    document.getElementById('postPropertyForm').reset();
+
+                    // Reload properties after short delay
+                    setTimeout(() => {
+                        loadAllProperties();
+                        closePostModal();
+                    }, 2000);
+                } else {
+                    alert('Error posting property: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to post property. Make sure the server is running.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Post Property';
+            }
+        }
+
+
+        function initAutocomplete() {
+            const input = document.getElementById('address');
+
+            if (!input) {
+                console.log('Address input not found - will retry when modal opens');
+                return;
+            }
+
+            // Create autocomplete object
+            const autocomplete = new google.maps.places.Autocomplete(input, {
+                types: ['address'],
+                componentRestrictions: { country: 'ca' } // Restrict to Canada
+            });
+
+            // When user selects an address from dropdown
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+
+                if (place.geometry) {
+                    // Auto-fill latitude
+                    document.getElementById('latitude').value =
+                        place.geometry.location.lat().toFixed(6);
+
+                    // Auto-fill longitude
+                    document.getElementById('longitude').value =
+                        place.geometry.location.lng().toFixed(6);
+
+                    // Use formatted address
+                    document.getElementById('address').value =
+                        place.formatted_address;
+
+                    console.log('✅ Address auto-filled:', place.formatted_address);
+                    console.log('📍 Coordinates:',
+                        place.geometry.location.lat(),
+                        place.geometry.location.lng()
+                    );
+                } else {
+                    console.log('No geometry found for selected place');
+                }
+            });
+
+            console.log('✅ Address autocomplete initialized');
+        }
+    </script>
+
+    <!-- Replace YOUR_GOOGLE_MAPS_API_KEY with your actual API key -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCHYttlS9AIVEKzfzn74dte3NMwIDy-WoE&libraries=places,geometry&callback=initMap">
+        </script>
+</body>
+
+</html>

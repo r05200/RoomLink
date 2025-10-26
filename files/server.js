@@ -1,119 +1,155 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const Anthropic = require('@anthropic-ai/sdk');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Mock property database
-const properties = [
-  {
-    id: 1,
-    address: "123 Maple Street, San Francisco, CA 94102",
-    price: 850000,
-    bedrooms: 3,
-    bathrooms: 2,
-    sqft: 1800,
-    type: "Single Family",
-    amenities: ["garage", "backyard", "updated kitchen"],
-    lat: 37.7749,
-    lng: -122.4194,
-    image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400"
-  },
-  {
-    id: 2,
-    address: "456 Oak Avenue, San Francisco, CA 94103",
-    price: 1200000,
-    bedrooms: 4,
-    bathrooms: 3,
-    sqft: 2400,
-    type: "Single Family",
-    amenities: ["pool", "garage", "modern appliances", "backyard"],
-    lat: 37.7699,
-    lng: -122.4124,
-    image: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400"
-  },
-  {
-    id: 3,
-    address: "789 Pine Road, San Francisco, CA 94104",
-    price: 650000,
-    bedrooms: 2,
-    bathrooms: 2,
-    sqft: 1200,
-    type: "Condo",
-    amenities: ["gym", "parking", "doorman"],
-    lat: 37.7899,
-    lng: -122.4024,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400"
-  },
-  {
-    id: 4,
-    address: "321 Birch Lane, San Francisco, CA 94105",
-    price: 950000,
-    bedrooms: 3,
-    bathrooms: 2.5,
-    sqft: 2000,
-    type: "Townhouse",
-    amenities: ["rooftop deck", "garage", "hardwood floors"],
-    lat: 37.7849,
-    lng: -122.4294,
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400"
-  },
-  {
-    id: 5,
-    address: "555 Cedar Street, San Francisco, CA 94106",
-    price: 1500000,
-    bedrooms: 5,
-    bathrooms: 4,
-    sqft: 3200,
-    type: "Single Family",
-    amenities: ["pool", "spa", "wine cellar", "garage", "home theater"],
-    lat: 37.7649,
-    lng: -122.4394,
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400"
-  },
-  {
-    id: 6,
-    address: "888 Elm Drive, San Francisco, CA 94107",
-    price: 720000,
-    bedrooms: 2,
-    bathrooms: 1,
-    sqft: 1100,
-    type: "Condo",
-    amenities: ["balcony", "parking", "updated kitchen"],
-    lat: 37.7599,
-    lng: -122.3994,
-    image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400"
-  },
-  {
-    id: 7,
-    address: "999 Willow Court, San Francisco, CA 94108",
-    price: 1100000,
-    bedrooms: 4,
-    bathrooms: 3,
-    sqft: 2200,
-    type: "Single Family",
-    amenities: ["backyard", "fireplace", "garage", "solar panels"],
-    lat: 37.7949,
-    lng: -122.4094,
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400"
-  },
-  {
-    id: 8,
-    address: "234 Spruce Avenue, San Francisco, CA 94109",
-    price: 890000,
-    bedrooms: 3,
-    bathrooms: 2,
-    sqft: 1650,
-    type: "Townhouse",
-    amenities: ["patio", "garage", "stainless appliances"],
-    lat: 37.7799,
-    lng: -122.4494,
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400"
+// Properties file path
+const PROPERTIES_FILE = path.join(__dirname, 'properties.json');
+
+// Load properties from file or use default
+function loadProperties() {
+  try {
+    if (fs.existsSync(PROPERTIES_FILE)) {
+      const data = fs.readFileSync(PROPERTIES_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error loading properties:', error);
   }
-];
+  // Return default properties if file doesn't exist or error
+  return getDefaultProperties();
+}
+
+// Save properties to file
+function saveProperties(properties) {
+  try {
+    fs.writeFileSync(PROPERTIES_FILE, JSON.stringify(properties, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error saving properties:', error);
+    return false;
+  }
+}
+
+// Default mock properties
+function getDefaultProperties() {
+  return [
+    {
+      id: 1,
+      address: "48 Cavalier Place, Waterloo, ON N2L5K7",
+      price: 2500,
+      bedrooms: 3,
+      bathrooms: 1,
+      sqft: 1800,
+      type: "Single Family",
+      amenities: ["air conditioning", "backyard", "vacuum system"],
+      lat: 43.4643,
+      lng: -80.5204,
+      image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop"
+    },
+    {
+      id: 2,
+      address: "101 Golden Eagle Rd 202, Waterloo, ON N2V 0H4",
+      price: 1700,
+      bedrooms: 1,
+      bathrooms: 1,
+      sqft: 1000,
+      type: "Apartment",
+      amenities: ["apartment", "central air", "modern appliances"],
+      lat: 43.4773,
+      lng: -80.5495,
+      image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop"
+    },
+    {
+      id: 3,
+      address: "213 - 1100 Lackner Place Kitchener, ON N2A0M1",
+      price: 1900,
+      bedrooms: 1,
+      bathrooms: 1,
+      sqft: 700,
+      type: "Apartment",
+      amenities: ["gym", "parking", "appliances"],
+      lat: 43.4516,
+      lng: -80.4925,
+      image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop"
+    },
+    {
+      id: 4,
+      address: "67 Valleyview Road, Kitchener, ON N2E3J1",
+      price: 1895,
+      bedrooms: 2,
+      bathrooms: 1,
+      sqft: 750,
+      type: "Townhouse",
+      amenities: ["rooftop deck", "garage", "hardwood floors"],
+      lat: 43.4186,
+      lng: -80.4728,
+      image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop"
+    },
+    {
+      id: 5,
+      address: "60 Frederick Street Unit 903, Kitchener, ON N2H0C7",
+      price: 1925,
+      bedrooms: 2,
+      bathrooms: 1,
+      sqft: 600,
+      type: "Condo",
+      amenities: ["balcony", "gym", "air conditioning"],
+      lat: 43.4509,
+      lng: -80.4925,
+      image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=300&fit=crop"
+    },
+    {
+      id: 6,
+      address: "123 University Ave, Waterloo, ON N2L3G1",
+      price: 1650,
+      bedrooms: 2,
+      bathrooms: 1,
+      sqft: 850,
+      type: "Condo",
+      amenities: ["balcony", "parking", "updated kitchen"],
+      lat: 43.4723,
+      lng: -80.5449,
+      image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop"
+    },
+    {
+      id: 7,
+      address: "456 King Street North, Waterloo, ON N2J2Z5",
+      price: 2800,
+      bedrooms: 4,
+      bathrooms: 3,
+      sqft: 2200,
+      type: "Single Family",
+      amenities: ["backyard", "fireplace", "garage", "finished basement"],
+      lat: 43.4668,
+      lng: -80.5247,
+      image: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop"
+    },
+    {
+      id: 8,
+      address: "89 Erb Street West, Waterloo, ON N2L1S9",
+      price: 2100,
+      bedrooms: 3,
+      bathrooms: 2,
+      sqft: 1650,
+      type: "Townhouse",
+      amenities: ["patio", "garage", "stainless appliances"],
+      lat: 43.4632,
+      lng: -80.5243,
+      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop"
+    }
+  ];
+}
+
+// Initialize properties
+let properties = loadProperties();
 
 // Claude AI endpoint - Extract criteria and return filtered properties
 app.post('/api/search', async (req, res) => {
@@ -122,7 +158,7 @@ app.post('/api/search', async (req, res) => {
 
     // Initialize Anthropic client
     const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY || 'your-api-key-here'
+      apiKey: process.env.ANTHROPIC_API_KEY
     });
 
     // Call Claude to extract structured criteria
@@ -231,6 +267,69 @@ Return ONLY the JSON object, no other text.`,
 // Get all properties endpoint
 app.get('/api/properties', (req, res) => {
   res.json(properties);
+});
+
+// Post new property endpoint
+app.post('/api/properties', (req, res) => {
+  try {
+    const newProperty = req.body;
+
+    // Validate required fields
+    if (!newProperty.address || !newProperty.price || !newProperty.bedrooms ||
+      !newProperty.bathrooms || !newProperty.sqft || !newProperty.latitude ||
+      !newProperty.longitude || !newProperty.propertyType) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        message: 'Please fill in all required property details'
+      });
+    }
+
+    // Generate new ID
+    const newId = properties.length > 0
+      ? Math.max(...properties.map(p => p.id)) + 1
+      : 1;
+
+    // Create property object
+    const property = {
+      id: newId,
+      address: newProperty.address,
+      price: newProperty.price,
+      bedrooms: newProperty.bedrooms,
+      bathrooms: newProperty.bathrooms,
+      sqft: newProperty.sqft,
+      type: newProperty.propertyType,
+      amenities: newProperty.amenities || [],
+      lat: newProperty.latitude,
+      lng: newProperty.longitude,
+      image: newProperty.imageUrl || "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400",
+      roommate: newProperty.roommate || {},
+      contact: newProperty.contact || {},
+      datePosted: new Date().toISOString()
+    };
+
+    // Add to properties array
+    properties.push(property);
+
+    // Save to file
+    if (saveProperties(properties)) {
+      res.status(201).json({
+        success: true,
+        message: 'Property posted successfully',
+        property: property
+      });
+    } else {
+      res.status(500).json({
+        error: 'Failed to save property',
+        message: 'Could not save property to database'
+      });
+    }
+  } catch (error) {
+    console.error('Error posting property:', error);
+    res.status(500).json({
+      error: 'Server error',
+      message: error.message
+    });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
