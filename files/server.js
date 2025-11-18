@@ -6,9 +6,12 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Properties file path
 const PROPERTIES_FILE = path.join(__dirname, 'properties.json');
@@ -264,6 +267,8 @@ Return ONLY the JSON object, no other text.`,
   }
 });
 
+
+
 // Get all properties endpoint
 app.get('/api/properties', (req, res) => {
   res.json(properties);
@@ -330,6 +335,10 @@ app.post('/api/properties', (req, res) => {
       message: error.message
     });
   }
+});
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;

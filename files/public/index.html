@@ -5,663 +5,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RoomLink - Find Your Dream Home</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .search-bar {
-            margin-top: 20px;
-            position: relative;
-        }
-
-        #searchInput {
-            width: 100%;
-            padding: 18px 180px 18px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 50px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            outline: none;
-        }
-
-        #searchBtn {
-            position: absolute;
-            right: 6px;
-            top: 6px;
-            padding: 12px 35px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 15px;
-            transition: transform 0.2s;
-        }
-
-        #searchBtn:hover {
-            transform: scale(1.05);
-        }
-
-        #searchBtn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            min-height: calc(100vh - 200px);
-        }
-
-        .results-section {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .results-header {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .results-count {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .search-criteria {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .properties-grid {
-            display: grid;
-            gap: 15px;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            max-height: calc(100vh - 350px);
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .property-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-        }
-
-        .property-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            border-color: #667eea;
-        }
-
-        .property-image {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-
-        .property-content {
-            padding: 15px;
-        }
-
-        .property-price {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 8px;
-        }
-
-        .property-address {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
-            line-height: 1.4;
-        }
-
-        .property-specs {
-            display: flex;
-            gap: 15px;
-            font-size: 14px;
-            color: #666;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-        }
-
-        .property-type {
-            display: inline-block;
-            padding: 4px 10px;
-            background: #f0f4ff;
-            color: #667eea;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-top: 8px;
-        }
-
-        .amenities {
-            margin-top: 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .amenity-tag {
-            padding: 3px 8px;
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 8px;
-            font-size: 11px;
-        }
-
-        /* Detail Panel */
-        .detail-panel {
-            display: none;
-            flex-direction: column;
-            gap: 20px;
-            max-height: calc(100vh - 350px);
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .detail-panel.active {
-            display: flex;
-        }
-
-        .back-button {
-            padding: 12px 24px;
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            align-self: flex-start;
-        }
-
-        .back-button:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .detail-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .detail-image {
-            width: 100%;
-            height: 350px;
-            object-fit: cover;
-        }
-
-        .detail-content {
-            padding: 30px;
-        }
-
-        .detail-price {
-            font-size: 36px;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 15px;
-        }
-
-        .detail-address {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .detail-specs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-            padding: 25px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .spec-item {
-            text-align: center;
-        }
-
-        .spec-icon {
-            font-size: 32px;
-            margin-bottom: 8px;
-        }
-
-        .spec-label {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .spec-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            margin-top: 4px;
-        }
-
-        .detail-section {
-            margin: 25px 0;
-        }
-
-        .detail-section h3 {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .amenities-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .amenity-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .contact-info {
-            background: #f0f4ff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 25px;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 12px 0;
-            font-size: 16px;
-            color: #333;
-        }
-
-        .roommate-info {
-            background: #fff3e0;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        .roommate-info h4 {
-            color: #e65100;
-            margin-bottom: 12px;
-            font-size: 18px;
-        }
-
-        .map-section {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            position: sticky;
-            top: 20px;
-            height: calc(100vh - 40px);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .map-header {
-            padding: 15px 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .map-header h2 {
-            font-size: 18px;
-            color: #333;
-        }
-
-        .places-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex: 1;
-            max-width: 500px;
-        }
-
-        .places-search-box {
-            flex: 1;
-            padding: 10px 16px;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            background: white;
-            color: #333;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .places-search-box:focus {
-            border-color: #5568d3;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .places-search-box::placeholder {
-            color: #999;
-        }
-
-        .places-search-btn {
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .places-search-btn:hover {
-            background: #5568d3;
-        }
-
-        .places-search-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .clear-places-btn {
-            padding: 8px 16px;
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: none;
-        }
-
-        .clear-places-btn.visible {
-            display: block;
-        }
-
-        #map {
-            flex: 1;
-            min-height: 400px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 20px auto;
-            padding: 0;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px 15px 0 0;
-        }
-
-        .close {
-            color: white;
-            font-size: 35px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .form-section {
-            margin-bottom: 30px;
-        }
-
-        .form-section h3 {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-group label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        .success-message {
-            display: none;
-            padding: 15px;
-            background: #4caf50;
-            color: white;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .roommate-fields {
-            display: none;
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .roommate-fields.visible {
-            display: block;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div class="header">
+    <!-- Header -->
+    <header class="header">
         <div class="header-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h1>🏠 Roomlink</h1>
-                <button onclick="openPostModal()"
-                    style="padding: 12px 24px; background: white; color: #667eea; border: 2px solid white; border-radius: 25px; font-weight: bold; cursor: pointer;">
-                    + Post Property
-                </button>
-            </div>
-            <p>Find your perfect home using natural language - powered by Claude AI</p>
+            <h1>🏠 RoomLink - AI-Powered Property Search</h1>
+            <p>Find your perfect rental property with natural language search</p>
             <div class="search-bar">
                 <input type="text" id="searchInput"
-                    placeholder="Try: '3 bedroom house under $3000' or 'affordable condo with parking'"
+                    placeholder="Try: '2 bedroom apartment under $1800 with parking' or 'pet-friendly condo near university'"
                     onkeypress="handleKeyPress(event)">
                 <button id="searchBtn" onclick="searchProperties()">Search</button>
             </div>
+            <div class="post-button-container">
+                <button id="postPropertyBtn" onclick="openPostModal()">
+                    <span>+</span> Post Property
+                </button>
+            </div>
         </div>
-    </div>
+    </header>
 
+    <!-- Main Container -->
     <div class="container">
+        <!-- Results Section -->
         <div class="results-section">
-            <div class="results-header" id="resultsHeader">
-                <div class="results-count">Showing all properties</div>
+            <div class="results-header">
+                <div class="results-count" id="resultsCount">All Properties</div>
                 <div class="search-criteria" id="searchCriteria" style="display: none;"></div>
             </div>
-            <div class="properties-grid" id="propertiesGrid"></div>
-            <div class="detail-panel" id="detailPanel">
-                <button class="back-button" onclick="closeDetailPanel()">← Back to Properties</button>
-                <div id="detailContent"></div>
+            <div class="properties-grid" id="propertiesGrid">
+                <div class="loading" style="grid-column: 1/-1;">
+                    <div class="spinner"></div>
+                    <p>Loading properties...</p>
+                </div>
             </div>
+            <div class="detail-panel" id="detailPanel"></div>
         </div>
 
+        <!-- Map Section -->
         <div class="map-section">
-            <div class="map-header">
-                <h2>📍 Map View</h2>
-                <div class="places-controls">
-                    <input type="text" class="places-search-box" id="placesSearchBox"
-                        placeholder="Search nearby places (e.g., pizza, coffee, gym)..."
+            <div class="map-controls">
+                <h3>🔍 Search Nearby Places</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
+                    Find restaurants, coffee shops, gyms, and more near these properties
+                </p>
+                <div class="controls-group">
+                    <input type="text" id="placesSearchBox" placeholder="e.g., coffee, gym, grocery"
                         onkeypress="handlePlacesKeyPress(event)">
-                    <button class="places-search-btn" id="placesSearchBtn"
-                        onclick="searchNearbyPlaces()">Search</button>
-                    <button class="clear-places-btn" id="clearPlacesBtn" onclick="clearPlaces()">Clear</button>
+                    <button id="placesSearchBtn" onclick="searchNearbyPlaces()">Search</button>
                 </div>
             </div>
             <div id="map"></div>
+
         </div>
     </div>
 
@@ -669,495 +67,162 @@
     <div id="postModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📝 Post Your Property</h2>
+                <h2>Post New Property</h2>
                 <span class="close" onclick="closePostModal()">&times;</span>
             </div>
             <div class="modal-body">
-                <div id="successMessage" class="success-message">✅ Property posted successfully!</div>
+                <div id="successMessage" class="success-message">
+                    ✅ Property posted successfully! Redirecting...
+                </div>
                 <form id="postPropertyForm" onsubmit="submitProperty(event)">
-                    <div class="form-section">
-                        <h3>🏠 Property Details</h3>
-                        <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label for="address">Address *</label>
-                                <input type="text" id="address" required placeholder="123 Main Street, City, State ZIP">
-                            </div>
-                            <div class="form-group">
-                                <label for="price">Monthly Rent ($) *</label>
-                                <input type="number" id="price" required placeholder="2500" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="propertyType">Property Type *</label>
-                                <input type="text" id="propertyType" required
-                                    placeholder="e.g., Single Family, Condo, Townhouse, Apartment, Studio">
-                            </div>
-                            <div class="form-group">
-                                <label for="bedrooms">Bedrooms *</label>
-                                <input type="number" id="bedrooms" required placeholder="3" min="0" max="20">
-                            </div>
-                            <div class="form-group">
-                                <label for="bathrooms">Bathrooms *</label>
-                                <input type="number" id="bathrooms" required placeholder="2" min="0" max="20"
-                                    step="0.5">
-                            </div>
-                            <div class="form-group">
-                                <label for="sqft">Square Feet *</label>
-                                <input type="number" id="sqft" required placeholder="1800" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="latitude">Latitude *</label>
-                                <input type="number" id="latitude" required placeholder="43.4643" step="0.0001">
-                            </div>
-                            <div class="form-group">
-                                <label for="longitude">Longitude *</label>
-                                <input type="number" id="longitude" required placeholder="-80.5204" step="0.0001">
-                            </div>
-                            <div class="form-group full-width">
-                                <label for="imageUrl">Property Image URL (optional)</label>
-                                <input type="url" id="imageUrl" placeholder="https://example.com/property-image.jpg">
-                            </div>
+                    <!-- Property Details -->
+                    <h3 style="margin-bottom: 20px; color: #333;">Property Details</h3>
+
+                    <div class="form-group">
+                        <label for="address">Address *</label>
+                        <input type="text" id="address" name="address" required
+                            placeholder="Start typing an address...">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="latitude">Latitude *</label>
+                            <input type="number" id="latitude" name="latitude" step="any" required
+                                placeholder="Auto-filled from address">
+                        </div>
+                        <div class="form-group">
+                            <label for="longitude">Longitude *</label>
+                            <input type="number" id="longitude" name="longitude" step="any" required
+                                placeholder="Auto-filled from address">
                         </div>
                     </div>
-                    <div class="form-section">
-                        <h3>✨ Amenities</h3>
-                        <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label for="amenities">Amenities (separate with commas)</label>
-                                <textarea id="amenities" rows="3"
-                                    placeholder="e.g., parking, gym, pool, balcony, garage, air conditioning, backyard, fireplace"></textarea>
-                                <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">Enter
-                                    amenities separated by commas</small>
-                            </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price">Monthly Rent ($) *</label>
+                            <input type="number" id="price" name="price" min="0" required placeholder="e.g., 1500">
+                        </div>
+                        <div class="form-group">
+                            <label for="propertyType">Property Type *</label>
+                            <select id="propertyType" name="propertyType" required>
+                                <option value="">Select type...</option>
+                                <option value="Apartment">Apartment</option>
+                                <option value="Condo">Condo</option>
+                                <option value="Single Family">Single Family House</option>
+                                <option value="Townhouse">Townhouse</option>
+                                <option value="Studio">Studio</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="form-section">
-                        <h3>👥 Roommate Information (Optional)</h3>
-                        <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label for="lookingForRoommate">Looking for a roommate?</label>
-                                <select id="lookingForRoommate" onchange="toggleRoommateFields()">
-                                    <option value="no">No</option>
-                                    <option value="yes">Yes</option>
-                                </select>
-                            </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bedrooms">Bedrooms *</label>
+                            <select id="bedrooms" name="bedrooms" required>
+                                <option value="">Select...</option>
+                                <option value="0">Studio</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5+</option>
+                            </select>
                         </div>
-                        <div id="roommateFields" class="roommate-fields">
+                        <div class="form-group">
+                            <label for="bathrooms">Bathrooms *</label>
+                            <select id="bathrooms" name="bathrooms" required>
+                                <option value="">Select...</option>
+                                <option value="1">1</option>
+                                <option value="1.5">1.5</option>
+                                <option value="2">2</option>
+                                <option value="2.5">2.5</option>
+                                <option value="3">3+</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sqft">Square Footage *</label>
+                        <input type="number" id="sqft" name="sqft" min="100" required placeholder="e.g., 1200">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="imageUrl">Property Image URL</label>
+                        <input type="url" id="imageUrl" name="imageUrl"
+                            placeholder="https://example.com/image.jpg (optional)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amenities">Amenities (comma-separated)</label>
+                        <input type="text" id="amenities" name="amenities"
+                            placeholder="e.g., parking, gym, pool, laundry, balcony">
+                    </div>
+
+                    <!-- Roommate Section -->
+                    <h3 style="margin: 30px 0 20px 0; color: #333;">Roommate Information</h3>
+
+                    <div class="form-group">
+                        <label for="lookingForRoommate">Looking for Roommate?</label>
+                        <select id="lookingForRoommate" name="lookingForRoommate" onchange="toggleRoommateFields()">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
+
+                    <div id="roommateFields" class="roommate-fields">
+                        <div class="form-row">
                             <div class="form-group">
                                 <label for="roommateCount">Number of Roommates Needed</label>
-                                <input type="number" id="roommateCount" placeholder="1" min="0" max="10">
+                                <input type="number" id="roommateCount" name="roommateCount" min="1" max="10"
+                                    placeholder="e.g., 1">
                             </div>
                             <div class="form-group">
-                                <label for="monthlyRent">Monthly Rent per Roommate ($)</label>
-                                <input type="number" id="monthlyRent" placeholder="1200" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="moveInDate">Available Move-in Date</label>
-                                <input type="date" id="moveInDate">
-                            </div>
-                            <div class="form-group full-width">
-                                <label for="roommatePreferences">Roommate Preferences</label>
-                                <textarea id="roommatePreferences"
-                                    placeholder="e.g., Non-smoker, quiet, professional, pet-friendly..."></textarea>
-                            </div>
-                            <div class="form-group full-width">
-                                <label for="description">Additional Description</label>
-                                <textarea id="description"
-                                    placeholder="Describe the property, neighborhood, lifestyle, etc."></textarea>
-                            </div>
-                            <div class="form-group full-width">
-                                <label for="contactEmail">Contact Email *</label>
-                                <input type="email" id="contactEmail" required placeholder="your.email@example.com">
-                            </div>
-                            <div class="form-group full-width">
-                                <label for="contactPhone">Contact Phone</label>
-                                <input type="tel" id="contactPhone" placeholder="(555) 123-4567">
+                                <label for="monthlyRent">Rent per Person ($)</label>
+                                <input type="number" id="monthlyRent" name="monthlyRent" min="0"
+                                    placeholder="e.g., 750">
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="moveInDate">Available Move-in Date</label>
+                            <input type="date" id="moveInDate" name="moveInDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="roommatePreferences">Roommate Preferences</label>
+                            <textarea id="roommatePreferences" name="roommatePreferences"
+                                placeholder="e.g., Looking for clean, quiet professional or student. No smoking, pets okay."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Additional Description</label>
+                            <textarea id="description" name="description"
+                                placeholder="Any additional information about the room, house rules, utilities included, etc."></textarea>
+                        </div>
                     </div>
-                    <button type="submit" class="submit-btn" id="submitBtn">Post Property</button>
+
+                    <!-- Contact Information -->
+                    <h3 style="margin: 30px 0 20px 0; color: #333;">Contact Information</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contactEmail">Email</label>
+                            <input type="email" id="contactEmail" name="contactEmail" placeholder="your@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="contactPhone">Phone</label>
+                            <input type="tel" id="contactPhone" name="contactPhone" placeholder="(123) 456-7890">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn">Post Property</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <script>
-        let map, markers = [], markerInfoWindows = [], placeMarkers = [], allProperties = [], currentProperty = null, placesService;
-        const API_URL = 'http://localhost:3000';
-
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: 43.4643, lng: -80.5204 },
-                zoom: 12,
-                styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
-            });
-            placesService = new google.maps.places.PlacesService(map);
-            loadAllProperties();
-        }
-
-        async function loadAllProperties() {
-            showLoading();
-            try {
-                const response = await fetch(`${API_URL}/api/properties`);
-                allProperties = await response.json();
-                displayProperties(allProperties, 'Showing all properties', null);
-            } catch (error) {
-                showError('Failed to load properties. Make sure the server is running.');
-            }
-        }
-
-        function displayProperties(properties, headerText, criteria) {
-            const grid = document.getElementById('propertiesGrid');
-            const resultsHeader = document.getElementById('resultsHeader');
-            const searchCriteriaDiv = document.getElementById('searchCriteria');
-            grid.innerHTML = '';
-            resultsHeader.querySelector('.results-count').textContent = `${headerText} (${properties.length} ${properties.length === 1 ? 'property' : 'properties'} found)`;
-
-            if (criteria && Object.keys(criteria).length > 0) {
-                const criteriaText = formatCriteria(criteria);
-                if (criteriaText) {
-                    searchCriteriaDiv.innerHTML = `<strong>Search criteria:</strong> ${criteriaText}`;
-                    searchCriteriaDiv.style.display = 'block';
-                }
-            } else {
-                searchCriteriaDiv.style.display = 'none';
-            }
-
-            markers.forEach(marker => marker.setMap(null));
-            markerInfoWindows.forEach(infoWindow => infoWindow.close());
-            markers = [];
-            markerInfoWindows = [];
-
-            if (properties.length === 0) {
-                grid.innerHTML = '<div class="no-results" style="grid-column: 1/-1;"><h3>🔍 No Properties Found</h3><p>Try adjusting your search criteria</p></div>';
-                return;
-            }
-
-            const bounds = new google.maps.LatLngBounds();
-            properties.forEach((property) => {
-                const card = document.createElement('div');
-                card.className = 'property-card';
-                card.onclick = () => showPropertyDetail(property.id);
-                card.innerHTML = `
-                    <img src="${property.image}" alt="${property.address}" class="property-image">
-                    <div class="property-content">
-                        <div class="property-price">$${property.price.toLocaleString()}/mo</div>
-                        <div class="property-address">${property.address}</div>
-                        <div class="property-specs">
-                            <span>🛏️ ${property.bedrooms} bed</span>
-                            <span>🚿 ${property.bathrooms} bath</span>
-                            <span>📐 ${property.sqft} sqft</span>
-                        </div>
-                        <span class="property-type">${property.type}</span>
-                        ${property.amenities && property.amenities.length > 0 ? `<div class="amenities">${property.amenities.slice(0, 3).map(a => `<span class="amenity-tag">${a}</span>`).join('')}</div>` : ''}
-                    </div>
-                `;
-                grid.appendChild(card);
-
-                const marker = new google.maps.Marker({
-                    position: { lat: property.lat, lng: property.lng },
-                    map: map,
-                    title: property.address,
-                    label: { text: `$${(property.price / 1000).toFixed(1)}k`, color: 'white', fontSize: '12px', fontWeight: 'bold' },
-                    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 25, fillColor: '#667eea', fillOpacity: 0.9, strokeColor: 'white', strokeWeight: 3 }
-                });
-
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `<div style="padding: 10px; max-width: 250px;"><img src="${property.image}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;"><div style="font-size: 18px; font-weight: bold; color: #667eea; margin-bottom: 5px;">$${property.price.toLocaleString()}/mo</div><div style="font-size: 14px; color: #333; margin-bottom: 8px;">${property.address}</div><div style="font-size: 13px; color: #666;">${property.bedrooms} bed • ${property.bathrooms} bath • ${property.sqft} sqft</div><div style="margin-top: 8px; padding: 4px 8px; background: #f0f4ff; color: #667eea; border-radius: 4px; display: inline-block; font-size: 11px;">${property.type}</div></div>`
-                });
-
-                marker.addListener('mouseover', () => infoWindow.open(map, marker));
-                marker.addListener('mouseout', () => infoWindow.close());
-                marker.addListener('click', () => showPropertyDetail(property.id));
-
-                markers.push(marker);
-                markerInfoWindows.push(infoWindow);
-                bounds.extend(marker.getPosition());
-            });
-
-            if (properties.length > 0) {
-                map.fitBounds(bounds);
-                if (properties.length === 1) map.setZoom(15);
-            }
-        }
-
-        function showPropertyDetail(propertyId) {
-            const property = allProperties.find(p => p.id === propertyId);
-            if (!property) return;
-            currentProperty = property;
-            document.getElementById('propertiesGrid').style.display = 'none';
-            document.getElementById('detailPanel').classList.add('active');
-
-            const detailContent = document.getElementById('detailContent');
-            detailContent.innerHTML = `
-                <div class="detail-card">
-                    <img src="${property.image}" alt="${property.address}" class="detail-image">
-                    <div class="detail-content">
-                        <div class="detail-price">$${property.price.toLocaleString()}/month</div>
-                        <div class="detail-address">${property.address}</div>
-                        <div class="detail-specs-grid">
-                            <div class="spec-item"><div class="spec-icon">🛏️</div><div class="spec-label">Bedrooms</div><div class="spec-value">${property.bedrooms}</div></div>
-                            <div class="spec-item"><div class="spec-icon">🚿</div><div class="spec-label">Bathrooms</div><div class="spec-value">${property.bathrooms}</div></div>
-                            <div class="spec-item"><div class="spec-icon">📐</div><div class="spec-label">Square Feet</div><div class="spec-value">${property.sqft.toLocaleString()}</div></div>
-                            <div class="spec-item"><div class="spec-icon">🏠</div><div class="spec-label">Type</div><div class="spec-value" style="font-size: 16px;">${property.type}</div></div>
-                        </div>
-                        ${property.amenities && property.amenities.length > 0 ? `<div class="detail-section"><h3>✨ Amenities</h3><div class="amenities-list">${property.amenities.map(amenity => `<div class="amenity-item"><div class="amenity-icon">✓</div><div>${amenity}</div></div>`).join('')}</div></div>` : ''}
-                        ${property.roommate && property.roommate.lookingForRoommate ? `<div class="roommate-info"><h4>👥 Roommate Opportunity</h4>${property.roommate.roommateCount ? `<p><strong>Looking for:</strong> ${property.roommate.roommateCount} roommate(s)</p>` : ''}${property.roommate.monthlyRent ? `<p><strong>Rent per roommate:</strong> $${property.roommate.monthlyRent}/month</p>` : ''}${property.roommate.moveInDate ? `<p><strong>Move-in date:</strong> ${property.roommate.moveInDate}</p>` : ''}${property.roommate.preferences ? `<p><strong>Preferences:</strong> ${property.roommate.preferences}</p>` : ''}${property.roommate.description ? `<p><strong>Description:</strong> ${property.roommate.description}</p>` : ''}</div>` : ''}
-                        ${property.contact && (property.contact.email || property.contact.phone) ? `<div class="contact-info"><h3 style="margin-bottom: 15px; font-size: 18px; color: #333;">📞 Contact Information</h3>${property.contact.email ? `<div class="contact-item"><div class="contact-icon">📧</div><a href="mailto:${property.contact.email}" style="color: #667eea; text-decoration: none;">${property.contact.email}</a></div>` : ''}${property.contact.phone ? `<div class="contact-item"><div class="contact-icon">📱</div><a href="tel:${property.contact.phone}" style="color: #667eea; text-decoration: none;">${property.contact.phone}</a></div>` : ''}</div>` : ''}
-                    </div>
-                </div>
-            `;
-            map.panTo({ lat: property.lat, lng: property.lng });
-            map.setZoom(15);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function closeDetailPanel() {
-            document.getElementById('propertiesGrid').style.display = 'grid';
-            document.getElementById('detailPanel').classList.remove('active');
-            currentProperty = null;
-            if (allProperties.length > 0) {
-                const bounds = new google.maps.LatLngBounds();
-                markers.forEach(marker => bounds.extend(marker.getPosition()));
-                map.fitBounds(bounds);
-            }
-        }
-
-        function formatCriteria(criteria) {
-            const parts = [];
-            if (criteria.minPrice || criteria.maxPrice) {
-                if (criteria.minPrice && criteria.maxPrice) parts.push(`$${criteria.minPrice.toLocaleString()} - $${criteria.maxPrice.toLocaleString()}`);
-                else if (criteria.minPrice) parts.push(`Over $${criteria.minPrice.toLocaleString()}`);
-                else if (criteria.maxPrice) parts.push(`Under $${criteria.maxPrice.toLocaleString()}`);
-            }
-            if (criteria.minBedrooms || criteria.maxBedrooms) {
-                if (criteria.minBedrooms && criteria.maxBedrooms && criteria.minBedrooms === criteria.maxBedrooms) parts.push(`${criteria.minBedrooms} bedrooms`);
-                else if (criteria.minBedrooms) parts.push(`${criteria.minBedrooms}+ bedrooms`);
-            }
-            if (criteria.minBathrooms) parts.push(`${criteria.minBathrooms}+ bathrooms`);
-            if (criteria.propertyTypes && criteria.propertyTypes.length > 0) parts.push(criteria.propertyTypes.join(', '));
-            if (criteria.requiredAmenities && criteria.requiredAmenities.length > 0) parts.push(`with ${criteria.requiredAmenities.join(', ')}`);
-            if (criteria.minSqft || criteria.maxSqft) {
-                if (criteria.minSqft && criteria.maxSqft) parts.push(`${criteria.minSqft}-${criteria.maxSqft} sqft`);
-                else if (criteria.minSqft) parts.push(`${criteria.minSqft}+ sqft`);
-                else if (criteria.maxSqft) parts.push(`up to ${criteria.maxSqft} sqft`);
-            }
-            return parts.join(' • ');
-        }
-
-        async function searchProperties() {
-            const input = document.getElementById('searchInput');
-            const searchBtn = document.getElementById('searchBtn');
-            const query = input.value.trim();
-            if (!query) { loadAllProperties(); return; }
-            searchBtn.disabled = true;
-            searchBtn.textContent = 'Searching...';
-            showLoading();
-            closeDetailPanel();
-            try {
-                const response = await fetch(`${API_URL}/api/search`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userPrompt: query })
-                });
-                const data = await response.json();
-                if (data.error) {
-                    showError(`Error: ${data.message}. Make sure ANTHROPIC_API_KEY is set.`);
-                } else {
-                    const headerText = data.properties.length > 0 ? `Search results for "${query}"` : 'No properties found';
-                    displayProperties(data.properties, headerText, data.criteria);
-                }
-            } catch (error) {
-                showError('Failed to connect to server. Make sure it\'s running on port 3000.');
-            } finally {
-                searchBtn.disabled = false;
-                searchBtn.textContent = 'Search';
-            }
-        }
-
-        function showLoading() {
-            const grid = document.getElementById('propertiesGrid');
-            grid.style.display = 'grid';
-            grid.innerHTML = '<div class="loading" style="grid-column: 1/-1;"><div class="spinner"></div><p>Searching properties...</p></div>';
-        }
-
-        function showError(message) {
-            const grid = document.getElementById('propertiesGrid');
-            grid.style.display = 'grid';
-            grid.innerHTML = `<div class="no-results" style="grid-column: 1/-1;"><h3>⚠️ Error</h3><p>${message}</p></div>`;
-        }
-
-        function handleKeyPress(event) { if (event.key === 'Enter') searchProperties(); }
-
-        function searchNearbyPlaces() {
-            const searchBox = document.getElementById('placesSearchBox');
-            const searchBtn = document.getElementById('placesSearchBtn');
-            const query = searchBox.value.trim();
-
-            if (!query) {
-                clearPlaces();
-                return;
-            }
-
-            // Disable button during search
-            searchBtn.disabled = true;
-            searchBtn.textContent = 'Searching...';
-
-            // Get center point for search
-            let center = currentProperty ?
-                { lat: currentProperty.lat, lng: currentProperty.lng } :
-                (() => {
-                    const bounds = new google.maps.LatLngBounds();
-                    markers.forEach(marker => bounds.extend(marker.getPosition()));
-                    return bounds.getCenter();
-                })();
-
-            clearPlaces();
-
-            // Use textSearch for flexible keyword search
-            const request = {
-                location: center,
-                radius: 3000,
-                query: query
-            };
-
-            placesService.textSearch(request, (results, status) => {
-                searchBtn.disabled = false;
-                searchBtn.textContent = 'Search';
-
-                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                    results.forEach(place => createPlaceMarker(place));
-                    document.getElementById('clearPlacesBtn').classList.add('visible');
-                    console.log(`Found ${results.length} places for "${query}"`);
-                } else {
-                    alert(`No places found for "${query}". Try different keywords like "pizza", "coffee", or "gym".`);
-                }
-            });
-        }
-
-        function handlePlacesKeyPress(event) {
-            if (event.key === 'Enter') {
-                searchNearbyPlaces();
-            }
-        }
-
-        function createPlaceMarker(place) {
-            const marker = new google.maps.Marker({
-                position: place.geometry.location,
-                map: map,
-                title: place.name,
-                icon: { url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png', scaledSize: new google.maps.Size(40, 40) }
-            });
-            const infowindow = new google.maps.InfoWindow({
-                content: `<div style="padding: 10px;"><h3 style="margin: 0 0 5px 0; font-size: 16px;">${place.name}</h3><p style="margin: 0; font-size: 13px; color: #666;">${place.vicinity}</p>${place.rating ? `<p style="margin: 5px 0 0 0; font-size: 13px;">⭐ ${place.rating} / 5</p>` : ''}</div>`
-            });
-            marker.addListener('click', () => infowindow.open(map, marker));
-            placeMarkers.push(marker);
-        }
-
-        function clearPlaces() {
-            placeMarkers.forEach(marker => marker.setMap(null));
-            placeMarkers = [];
-            document.getElementById('placesSearchBox').value = '';
-            document.getElementById('clearPlacesBtn').classList.remove('visible');
-        }
-
-        function openPostModal() {
-            document.getElementById('postModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            setTimeout(() => initAutocomplete(), 100);
-        }
-
-        function closePostModal() {
-            document.getElementById('postModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-            document.getElementById('postPropertyForm').reset();
-            document.getElementById('successMessage').style.display = 'none';
-        }
-
-        window.onclick = function (event) {
-            const modal = document.getElementById('postModal');
-            if (event.target === modal) closePostModal();
-        }
-
-        function toggleRoommateFields() {
-            const select = document.getElementById('lookingForRoommate');
-            const fields = document.getElementById('roommateFields');
-            if (select.value === 'yes') fields.classList.add('visible');
-            else fields.classList.remove('visible');
-        }
-
-        async function submitProperty(event) {
-            event.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Posting...';
-            const formData = {
-                address: document.getElementById('address').value,
-                price: parseInt(document.getElementById('price').value),
-                propertyType: document.getElementById('propertyType').value,
-                bedrooms: parseInt(document.getElementById('bedrooms').value),
-                bathrooms: parseFloat(document.getElementById('bathrooms').value),
-                sqft: parseInt(document.getElementById('sqft').value),
-                latitude: parseFloat(document.getElementById('latitude').value),
-                longitude: parseFloat(document.getElementById('longitude').value),
-                imageUrl: document.getElementById('imageUrl').value || 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400',
-                amenities: document.getElementById('amenities').value.split(',').map(a => a.trim()).filter(a => a.length > 0),
-                roommate: {
-                    lookingForRoommate: document.getElementById('lookingForRoommate').value === 'yes',
-                    roommateCount: parseInt(document.getElementById('roommateCount').value) || 0,
-                    monthlyRent: parseInt(document.getElementById('monthlyRent').value) || 0,
-                    moveInDate: document.getElementById('moveInDate').value,
-                    preferences: document.getElementById('roommatePreferences').value,
-                    description: document.getElementById('description').value
-                },
-                contact: {
-                    email: document.getElementById('contactEmail').value,
-                    phone: document.getElementById('contactPhone').value
-                }
-            };
-            try {
-                const response = await fetch(`${API_URL}/api/properties`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('successMessage').style.display = 'block';
-                    document.getElementById('postPropertyForm').reset();
-                    setTimeout(() => { loadAllProperties(); closePostModal(); }, 2000);
-                } else {
-                    alert('Error posting property: ' + (data.message || 'Unknown error'));
-                }
-            } catch (error) {
-                alert('Failed to post property. Make sure the server is running.');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Post Property';
-            }
-        }
-
-        function initAutocomplete() {
-            const input = document.getElementById('address');
-            if (!input) return;
-            const autocomplete = new google.maps.places.Autocomplete(input, {
-                types: ['address'],
-                componentRestrictions: { country: 'ca' }
-            });
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-                if (place.geometry) {
-                    document.getElementById('latitude').value = place.geometry.location.lat().toFixed(6);
-                    document.getElementById('longitude').value = place.geometry.location.lng().toFixed(6);
-                    document.getElementById('address').value = place.formatted_address;
-                }
-            });
-        }
-
-        window.initMap = initMap;
-    </script>
+    <!-- JavaScript -->
+    <script src="app.js"></script>
     <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCHYttlS9AIVEKzfzn74dte3NMwIDy-WoE&libraries=places,geometry&callback=initMap"></script>
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCHYttlS9AIVEKzfzn74dte3NMwIDy-WoE&libraries=places,geometry&callback=initMap">
+        </script>
 </body>
 
 </html>
